@@ -8,13 +8,19 @@ from app.main import app
 from app.core.database import get_db, Base
 from app.models_db import User, LeaderboardEntry
 
-# Use in-memory SQLite for tests
-SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+import os
+# ... imports
+
+# Use in-memory SQLite for tests by default, or env var
+SQLALCHEMY_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:")
+
+connect_args = {"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {}
+poolclass = StaticPool if "sqlite" in SQLALCHEMY_DATABASE_URL else None
 
 engine = create_async_engine(
     SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
+    connect_args=connect_args,
+    poolclass=poolclass,
 )
 
 TestingSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)

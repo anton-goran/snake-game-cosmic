@@ -7,26 +7,32 @@ from httpx import AsyncClient, ASGITransport
 from app.main import app
 from app.core.database import get_db, Base
 
-# Use a file-based SQLite DB for integration tests
+# Use a file-based SQLite DB for integration tests by default
 TEST_DB_FILE = "./test_integration.db"
-SQLALCHEMY_DATABASE_URL = f"sqlite+aiosqlite:///{TEST_DB_FILE}"
+DEFAULT_DB_URL = f"sqlite+aiosqlite:///{TEST_DB_FILE}"
+SQLALCHEMY_DATABASE_URL = os.getenv("TEST_DATABASE_URL", DEFAULT_DB_URL)
 
 @pytest_asyncio.fixture(scope="session")
 def event_loop():
     import asyncio
-    loop = asyncio.get_event_loop_policy().new_event_loop()
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
     yield loop
     loop.close()
 
 @pytest_asyncio.fixture(scope="session")
 async def db_engine():
-    # Remove existing test DB if any
-    if os.path.exists(TEST_DB_FILE):
+    # Remove existing test DB if any and if using default sqlite
+    if "sqlite" in SQLALCHEMY_DATABASE_URL and TEST_DB_FILE in SQLALCHEMY_DATABASE_URL and os.path.exists(TEST_DB_FILE):
         os.remove(TEST_DB_FILE)
         
+    connect_args = {"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {}
+    
     engine = create_async_engine(
         SQLALCHEMY_DATABASE_URL,
-        connect_args={"check_same_thread": False}
+        connect_args=connect_args
     )
     
     # Create tables
@@ -36,7 +42,7 @@ async def db_engine():
     yield engine
     
     await engine.dispose()
-    if os.path.exists(TEST_DB_FILE):
+    if "sqlite" in SQLALCHEMY_DATABASE_URL and TEST_DB_FILE in SQLALCHEMY_DATABASE_URL and os.path.exists(TEST_DB_FILE):
         os.remove(TEST_DB_FILE)
 
 @pytest_asyncio.fixture(scope="function")
