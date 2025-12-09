@@ -18,14 +18,33 @@ class MockDB:
         self.users["demo@example.com"] = demo_user
         self.users_by_id["user_1"] = demo_user
         self.passwords["demo@example.com"] = "password123"
+
+        # Additional fake users
+        users_data = [
+            ("user_2", "CosmicGamer", "cosmic@example.com", "pass123"),
+            ("user_3", "SnakeMaster", "master@example.com", "pass123"),
+            ("user_4", "NeonViper", "viper@example.com", "pass123"),
+            ("user_5", "RetroPlayer", "retro@example.com", "pass123"),
+        ]
+
+        for uid, uname, email, pwd in users_data:
+            u = User(id=uid, username=uname, email=email)
+            self.users[email] = u
+            self.users_by_id[uid] = u
+            self.passwords[email] = pwd
+
+        # Fake leaderboard entries
+        self.leaderboard.extend([
+            LeaderboardEntry(id="entry_1", username="DemoUser", score=100, mode=GameMode.pass_through, timestamp=int(time.time() * 1000)),
+            LeaderboardEntry(id="entry_2", username="CosmicGamer", score=2500, mode=GameMode.walls, timestamp=int(time.time() * 1000) - 3600000),
+            LeaderboardEntry(id="entry_3", username="SnakeMaster", score=1800, mode=GameMode.pass_through, timestamp=int(time.time() * 1000) - 7200000),
+            LeaderboardEntry(id="entry_4", username="NeonViper", score=3200, mode=GameMode.walls, timestamp=int(time.time() * 1000) - 100000),
+            LeaderboardEntry(id="entry_5", username="RetroPlayer", score=850, mode=GameMode.pass_through, timestamp=int(time.time() * 1000) - 50000),
+            LeaderboardEntry(id="entry_6", username="CosmicGamer", score=2100, mode=GameMode.pass_through, timestamp=int(time.time() * 1000) - 900000),
+        ])
         
-        self.leaderboard.append(LeaderboardEntry(
-            id="entry_1", 
-            username="DemoUser", 
-            score=100, 
-            mode=GameMode.pass_through, 
-            timestamp=int(time.time() * 1000)
-        ))
+        # Sort initial data
+        self.leaderboard.sort(key=lambda x: x.score, reverse=True)
 
     def create_user(self, user: User, password: str) -> User:
         if user.email in self.users:

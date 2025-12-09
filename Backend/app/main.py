@@ -22,6 +22,8 @@ app.include_router(auth.router)
 app.include_router(leaderboard.router)
 app.include_router(spectate.router)
 
-@app.get("/")
-def health_check():
-    return {"status": "ok", "message": "Snake Game Cosmic Backend is running"}
+from fastapi.responses import RedirectResponse
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/docs")
