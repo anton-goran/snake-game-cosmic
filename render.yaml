@@ -13,8 +13,6 @@ services:
           property: connectionString
       - key: PYTHONUNBUFFERED
         value: "1"
-      - key: PORT
-        value: "8000"
 
 databases:
   # The Managed PostgreSQL Database
