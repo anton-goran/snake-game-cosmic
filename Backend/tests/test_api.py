@@ -3,8 +3,9 @@ import pytest
 @pytest.mark.asyncio
 async def test_health_check(client):
     response = await client.get("/")
-    assert response.status_code == 307
-    assert response.headers["location"] == "/docs"
+    # The root endpoint serves static/index.html
+    assert response.status_code == 200
+    assert b"Dummy Test File" in response.content or b"html" in response.content.lower()
 
 @pytest.mark.asyncio
 async def test_auth_flow(client):

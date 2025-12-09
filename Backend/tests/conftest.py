@@ -34,9 +34,29 @@ async def db_session():
     async with TestingSessionLocal() as session:
         yield session
         
-    # Drop tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_static():
+    """Create dummy static/index.html for tests if it doesn't exist."""
+    created = False
+    if not os.path.exists("static"):
+        os.makedirs("static")
+        created = True
+    
+    if not os.path.exists("static/index.html"):
+        with open("static/index.html", "w") as f:
+            f.write("<html><body>Dummy Test File</body></html>")
+            
+    yield
+    
+    # Clean up only if we created it (to update: might be safer to leave it or properly clean up)
+    # properly cleaning up might interfere with parallel tests if not careful, 
+    # but session scope is fine.
+    if created:
+        import shutil
+        shutil.rmtree("static")
 
 @pytest_asyncio.fixture(scope="function")
 async def client(db_session):

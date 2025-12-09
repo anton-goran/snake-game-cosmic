@@ -1,11 +1,10 @@
-from fastapi.testclient import TestClient
-from app.main import app
+import pytest
+import pytest_asyncio
 
-client = TestClient(app)
-
-def test_signup_repro():
+@pytest.mark.asyncio
+async def test_signup_repro(client):
     # Attempt to signup with valid data
-    response = client.post("/auth/signup", json={
+    response = await client.post("/auth/signup", json={
         "username": "ReproUser",
         "email": "repro@example.com",
         "password": "password123"
