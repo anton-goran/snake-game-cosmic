@@ -4,7 +4,8 @@ import { Header } from '@/components/Header';
 import { GameCanvas } from '@/components/GameCanvas';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { mockBackend, ActivePlayer, GameFrame } from '@/lib/mockBackend';
+import { api } from '@/services/api';
+import { ActivePlayer, GameFrame } from '@/lib/mockBackend';
 import { Home, Eye, Users, Play } from 'lucide-react';
 
 export default function Watch() {
@@ -17,7 +18,7 @@ export default function Watch() {
 
   useEffect(() => {
     const fetchPlayers = async () => {
-      const players = await mockBackend.getActivePlayers();
+      const players = await api.getActivePlayers();
       setActivePlayers(players);
       setLoading(false);
     };
@@ -29,8 +30,8 @@ export default function Watch() {
     setWatching(true);
 
     // Start watching game frames
-    const frameGenerator = mockBackend.watchPlayer(player.id);
-    
+    const frameGenerator = api.watchPlayer(player.id);
+
     const updateFrame = async () => {
       for await (const frame of frameGenerator) {
         setGameFrame(frame);
@@ -51,7 +52,7 @@ export default function Watch() {
   return (
     <div className="min-h-screen">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-6">
@@ -86,11 +87,10 @@ export default function Watch() {
                         key={player.id}
                         onClick={() => !watching && startWatching(player)}
                         disabled={watching}
-                        className={`w-full text-left p-3 rounded-lg transition-all ${
-                          selectedPlayer?.id === player.id
-                            ? 'bg-gradient-cosmic text-primary-foreground'
-                            : 'bg-muted hover:bg-muted/80'
-                        } disabled:opacity-50`}
+                        className={`w-full text-left p-3 rounded-lg transition-all ${selectedPlayer?.id === player.id
+                          ? 'bg-gradient-cosmic text-primary-foreground'
+                          : 'bg-muted hover:bg-muted/80'
+                          } disabled:opacity-50`}
                       >
                         <div className="font-medium">{player.username}</div>
                         <div className="text-sm opacity-90 flex items-center justify-between">

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSnakeGame } from '@/hooks/useSnakeGame';
 import { useGame } from '@/contexts/GameContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockBackend } from '@/lib/mockBackend';
+import { api } from '@/services/api';
 import { Play, Pause, RotateCcw, Home, Zap, Trophy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,7 +33,7 @@ export default function Game() {
   // Submit score when game is over
   useEffect(() => {
     if (gameOver && score > 0 && user) {
-      mockBackend.submitScore(score, mode);
+      api.submitScore(score, mode);
       toast({
         title: 'Score Submitted!',
         description: `Your score of ${score} has been saved to the leaderboard.`,
@@ -62,7 +62,7 @@ export default function Game() {
   return (
     <div className="min-h-screen">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-6">
@@ -183,7 +183,7 @@ export default function Game() {
                     <div className="text-sm text-muted-foreground mb-1">Mode</div>
                     <div className="font-medium capitalize">{mode.replace('-', ' ')}</div>
                   </div>
-                  
+
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">Status</div>
                     <div className="font-medium">
@@ -206,7 +206,7 @@ export default function Game() {
                   <p>🎮 Use arrow keys or WASD to move</p>
                   <p>🍎 Eat the pink orbs to grow</p>
                   <p>
-                    {mode === 'pass-through' 
+                    {mode === 'pass-through'
                       ? '🌌 You can pass through walls'
                       : '🧱 Don\'t hit the walls!'}
                   </p>

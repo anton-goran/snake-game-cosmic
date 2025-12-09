@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { mockBackend, User } from '@/lib/mockBackend';
+import { api } from '@/services/api';
+import { User } from '@/lib/mockBackend';
 
 interface AuthContextType {
   user: User | null;
@@ -18,7 +19,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Check for existing user on mount
   useEffect(() => {
     const checkUser = async () => {
-      const currentUser = await mockBackend.getCurrentUser();
+      const currentUser = await api.getCurrentUser();
       setUser(currentUser);
       setLoading(false);
     };
@@ -26,7 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
-    const { user: loggedInUser, error } = await mockBackend.login(email, password);
+    const { user: loggedInUser, error } = await api.login(email, password);
     if (loggedInUser) {
       setUser(loggedInUser);
     }
@@ -34,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signup = async (email: string, password: string, username: string) => {
-    const { user: newUser, error } = await mockBackend.signup(email, password, username);
+    const { user: newUser, error } = await api.signup(email, password, username);
     if (newUser) {
       setUser(newUser);
     }
@@ -42,7 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await mockBackend.logout();
+    await api.logout();
     setUser(null);
   };
 

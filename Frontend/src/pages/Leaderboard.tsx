@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { mockBackend, LeaderboardEntry } from '@/lib/mockBackend';
+import { api } from '@/services/api';
+import { LeaderboardEntry } from '@/lib/mockBackend';
 import { Home, Trophy, Zap, Medal } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -14,7 +15,7 @@ export default function Leaderboard() {
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
-      const data = await mockBackend.getLeaderboard();
+      const data = await api.getLeaderboard();
       setLeaderboard(data);
       setLoading(false);
     };
@@ -34,11 +35,10 @@ export default function Leaderboard() {
         {topEntries.map((entry, index) => (
           <div
             key={entry.id}
-            className={`flex items-center gap-4 p-4 rounded-lg transition-all ${
-              index < 3
-                ? 'bg-gradient-cosmic text-primary-foreground'
-                : 'bg-card hover:bg-muted'
-            }`}
+            className={`flex items-center gap-4 p-4 rounded-lg transition-all ${index < 3
+              ? 'bg-gradient-cosmic text-primary-foreground'
+              : 'bg-card hover:bg-muted'
+              }`}
           >
             <div className="flex-shrink-0 w-12 text-center">
               {index === 0 && <Trophy className="w-6 h-6 mx-auto text-yellow-400" />}
@@ -69,7 +69,7 @@ export default function Leaderboard() {
   return (
     <div className="min-h-screen">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-6">
