@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: snake_user
+      POSTGRES_PASSWORD: snake_password
+      POSTGRES_DB: snake_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - snake-network
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      DATABASE_URL: postgresql+asyncpg://snake_user:snake_password@db/snake_db
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - snake-network
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - snake-network
+
+volumes:
+  postgres_data:
+
+
+networks:
+  snake-network:
+    driver: bridge
