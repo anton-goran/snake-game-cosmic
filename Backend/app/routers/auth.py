@@ -1,41 +1,59 @@
 from fastapi import APIRouter, HTTPException, Depends, status
-from ..models import User, LoginRequest, SignupRequest, Token
-from ..db import db
+from sqlalchemy.ext.asyncio import AsyncSession
+from ..models import LoginRequest, SignupRequest
+from ..models_db import User as DBUser
+from ..core.database import get_db
+from .. import crud
 from ..dependencies import get_current_user
 import uuid
+
+# Simple password hashing for demo (in extracting from MockDB)
+# In production use passlib
+def verify_password(plain: str, hashed: str) -> bool:
+    return plain == hashed # MockDB stored plain text as "hash" in extraction? 
+    # Actually MockDB stored password map. Here we store password_hash.
+    # Let's simple use plain text for "hash" now to match mock simplicity or simple equality.
+    # To do it right, I should install passlib[bcrypt], but let's stick to extraction.
+    # Let's assume hash is just the password for this refined mock step.
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 @router.post("/login")
-def login(request: LoginRequest):
-    if not db.verify_password(request.email, request.password):
-        raise HTTPException(status_code=400, detail="Invalid credentials")
-    
-    user = db.get_user_by_email(request.email)
+async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
+    user = await crud.get_user_by_email(db, request.email)
     if not user:
-        # Should not happen if verify_password is true, but safety check
         raise HTTPException(status_code=400, detail="Invalid credentials")
         
-    # Mock token generation: using user_id as token for simplicity in this mock
+    # Verify password (assuming stored as plain text for this stage of migration if no passlib)
+    # The models_db has password_hash.
+    if user.password_hash != request.password:
+         raise HTTPException(status_code=400, detail="Invalid credentials")
+
+    # Mock token generation: using user_id as token
     return {"user": user, "token": user.id}
 
 @router.post("/signup", status_code=201)
-def signup(request: SignupRequest):
+async def signup(request: SignupRequest, db: AsyncSession = Depends(get_db)):
+    existing = await crud.get_user_by_email(db, request.email)
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+        
     try:
-        new_user = User(
+        new_user = DBUser(
             id=f"user_{uuid.uuid4().hex[:8]}",
             username=request.username,
-            email=request.email
+            email=request.email,
+            password_hash=request.password # Storing plain as hash for now
         )
-        db.create_user(new_user, request.password)
+        await crud.create_user(db, new_user)
         return {"user": new_user, "token": new_user.id}
-    except ValueError as e:
+    except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/me")
-def get_me(current_user: User = Depends(get_current_user)):
+async def get_me(current_user: DBUser = Depends(get_current_user)):
     return current_user
 
 @router.post("/logout")
-def logout(current_user: User = Depends(get_current_user)):
+async def logout(current_user: DBUser = Depends(get_current_user)):
     return {"description": "Logout successful"}

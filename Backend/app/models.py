@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr, Field
-from typing import List, Optional
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from typing import List
 from enum import Enum
 
 class GameMode(str, Enum):
@@ -21,12 +21,16 @@ class User(BaseModel):
     username: str = Field(..., json_schema_extra={"example": "CosmicGamer"})
     email: EmailStr = Field(..., json_schema_extra={"example": "gamer@example.com"})
 
+    model_config = ConfigDict(from_attributes=True)
+
 class LeaderboardEntry(BaseModel):
     id: str
     username: str
     score: int
     mode: GameMode
     timestamp: int = Field(..., description="Unix timestamp in milliseconds")
+
+    model_config = ConfigDict(from_attributes=True)
 
 class ActivePlayer(BaseModel):
     id: str
