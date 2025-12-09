@@ -1,0 +1,65 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # 1. Test Job
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Backend Tests
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv and dependencies
+        run: |
+          pip install uv
+          uv sync --frozen
+        working-directory: ./Backend
+
+      - name: Run Backend Tests
+        run: |
+          source .venv/bin/activate
+          # Use in-memory SQLite for CI/CD speed
+          export TEST_DATABASE_URL="sqlite+aiosqlite:///:memory:"
+          pytest tests/
+          pytest tests_integration/
+        working-directory: ./Backend
+
+      # Frontend Tests
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: Frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+        working-directory: ./Frontend
+
+      - name: Run Frontend Tests
+        run: npm test -- run # Vitest watch mode disable
+        working-directory: ./Frontend
+
+  # 2. Deploy Job
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Render
+        # Only run if tests passed and we are on main branch
+        env:
+          deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          curl "$deploy_url"
