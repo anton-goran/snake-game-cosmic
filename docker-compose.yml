@@ -13,29 +13,17 @@ services:
     networks:
       - snake-network
 
-  backend:
+  app:
     build:
-      context: ./Backend
+      context: .
       dockerfile: Dockerfile
     restart: always
     environment:
       DATABASE_URL: postgresql+asyncpg://snake_user:snake_password@db/snake_db
     ports:
-      - "8000:8000"
+      - "8080:8000"
     depends_on:
       - db
-    networks:
-      - snake-network
-
-  frontend:
-    build:
-      context: ./Frontend
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - "8080:80"
-    depends_on:
-      - backend
     networks:
       - snake-network
 
