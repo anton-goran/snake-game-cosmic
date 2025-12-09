@@ -25,6 +25,12 @@ export interface ActivePlayer {
   mode: 'pass-through' | 'walls';
 }
 
+export interface UserStats {
+  games_played: number;
+  best_score: number;
+  rank: number;
+}
+
 export interface GameFrame {
   snake: { x: number; y: number }[];
   food: { x: number; y: number };
@@ -46,7 +52,7 @@ export const mockBackend = {
   // Login user
   async login(email: string, password: string): Promise<{ user: User | null; error: string | null }> {
     await delay();
-    
+
     // Simple validation
     if (!email || !password) {
       return { user: null, error: 'Email and password are required' };
@@ -67,7 +73,7 @@ export const mockBackend = {
   // Sign up new user
   async signup(email: string, password: string, username: string): Promise<{ user: User | null; error: string | null }> {
     await delay();
-    
+
     if (!email || !password || !username) {
       return { user: null, error: 'All fields are required' };
     }
@@ -104,7 +110,7 @@ export const mockBackend = {
    */
   async getLeaderboard(): Promise<LeaderboardEntry[]> {
     await delay();
-    
+
     const stored = localStorage.getItem(STORAGE_KEY_LEADERBOARD);
     let leaderboard: LeaderboardEntry[] = stored ? JSON.parse(stored) : [];
 
@@ -119,7 +125,7 @@ export const mockBackend = {
 
   async submitScore(score: number, mode: 'pass-through' | 'walls'): Promise<void> {
     await delay();
-    
+
     const user = await this.getCurrentUser();
     if (!user) return;
 
@@ -142,7 +148,7 @@ export const mockBackend = {
    */
   async getActivePlayers(): Promise<ActivePlayer[]> {
     await delay();
-    
+
     // Generate mock active players
     const mockPlayers: ActivePlayer[] = [
       { id: '1', username: 'CosmicGamer', currentScore: 45, mode: 'pass-through' },
@@ -162,33 +168,33 @@ export const mockBackend = {
     // Simulate real-time game frames
     let score = Math.floor(Math.random() * 30) + 10;
     const gridSize = 20;
-    
+
     let snake = [
       { x: 10, y: 10 },
       { x: 9, y: 10 },
       { x: 8, y: 10 },
     ];
-    
+
     let food = {
       x: Math.floor(Math.random() * gridSize),
       y: Math.floor(Math.random() * gridSize),
     };
-    
+
     const directions: Array<'UP' | 'DOWN' | 'LEFT' | 'RIGHT'> = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
     let direction: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' = directions[Math.floor(Math.random() * directions.length)];
-    
+
     // Generate frames indefinitely
     while (true) {
       await delay(200); // Frame every 200ms
-      
+
       // Occasionally change direction
       if (Math.random() > 0.7) {
         direction = directions[Math.floor(Math.random() * directions.length)];
       }
-      
+
       // Move snake
       const head = { ...snake[0] };
-      
+
       switch (direction) {
         case 'UP':
           head.y = (head.y - 1 + gridSize) % gridSize;
@@ -203,9 +209,9 @@ export const mockBackend = {
           head.x = (head.x + 1) % gridSize;
           break;
       }
-      
+
       snake.unshift(head);
-      
+
       // Check if ate food
       if (head.x === food.x && head.y === food.y) {
         score++;
@@ -216,7 +222,7 @@ export const mockBackend = {
       } else {
         snake.pop();
       }
-      
+
       yield {
         snake,
         food,

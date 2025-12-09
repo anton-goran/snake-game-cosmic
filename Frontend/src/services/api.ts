@@ -1,4 +1,4 @@
-import { User, LeaderboardEntry, ActivePlayer } from '../lib/mockBackend';
+import { User, LeaderboardEntry, ActivePlayer, UserStats } from '../lib/mockBackend';
 // Note: We are reusing types from mockBackend for now to avoid refactoring everything, 
 // but we should eventually move types to a shared location or generated file.
 // Ideally, we would generate these from OpenAPI, but for this task we'll match manually.
@@ -62,6 +62,18 @@ export const api = {
             localStorage.removeItem('token');
             return null;
         }
+        return await res.json();
+    },
+
+    async getUserStats(): Promise<UserStats | null> {
+        const token = localStorage.getItem('token');
+        if (!token) return null;
+
+        const res = await fetch(`${API_Base_URL}/auth/stats`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) return null;
         return await res.json();
     },
 

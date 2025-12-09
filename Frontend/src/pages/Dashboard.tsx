@@ -3,14 +3,26 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { Gamepad2, Trophy, Eye, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { api } from '@/services/api';
+import { UserStats } from '@/lib/mockBackend';
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [stats, setStats] = useState<UserStats | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const data = await api.getUserStats();
+      if (data) setStats(data);
+    };
+    fetchStats();
+  }, []);
 
   return (
     <div className="min-h-screen">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="text-center space-y-4">
@@ -23,7 +35,7 @@ export default function Dashboard() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <Card 
+            <Card
               className="cursor-pointer hover:shadow-glow-primary transition-all duration-300 border-primary/30 group"
               onClick={() => navigate('/game')}
             >
@@ -48,7 +60,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            <Card 
+            <Card
               className="cursor-pointer hover:shadow-glow-secondary transition-all duration-300 border-secondary/30 group"
               onClick={() => navigate('/leaderboard')}
             >
@@ -68,7 +80,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            <Card 
+            <Card
               className="cursor-pointer hover:shadow-[0_0_20px_hsl(var(--neon-pink)/0.5)] transition-all duration-300 border-accent/30 group"
               onClick={() => navigate('/watch')}
             >
@@ -101,15 +113,15 @@ export default function Dashboard() {
               <CardContent className="space-y-2">
                 <div className="flex justify-between">
                   <span className="opacity-90">Games Played:</span>
-                  <span className="font-bold">Coming Soon</span>
+                  <span className="font-bold">{stats ? stats.games_played : '...'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="opacity-90">Best Score:</span>
-                  <span className="font-bold">Coming Soon</span>
+                  <span className="font-bold">{stats ? stats.best_score : '...'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="opacity-90">Rank:</span>
-                  <span className="font-bold">Coming Soon</span>
+                  <span className="font-bold">{stats ? (stats.rank > 0 ? `#${stats.rank}` : '-') : '...'}</span>
                 </div>
               </CardContent>
             </Card>

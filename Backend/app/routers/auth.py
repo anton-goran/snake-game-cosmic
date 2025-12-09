@@ -54,6 +54,11 @@ async def signup(request: SignupRequest, db: AsyncSession = Depends(get_db)):
 async def get_me(current_user: DBUser = Depends(get_current_user)):
     return current_user
 
+@router.get("/stats")
+async def get_my_stats(current_user: DBUser = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    stats = await crud.get_user_stats(db, current_user.username)
+    return stats
+
 @router.post("/logout")
 async def logout(current_user: DBUser = Depends(get_current_user)):
     return {"description": "Logout successful"}
