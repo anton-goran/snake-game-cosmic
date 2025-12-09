@@ -1,9 +1,9 @@
-import { User, LeaderboardEntry, ActivePlayer, GameMode } from '../lib/mockBackend';
+import { User, LeaderboardEntry, ActivePlayer } from '../lib/mockBackend';
 // Note: We are reusing types from mockBackend for now to avoid refactoring everything, 
 // but we should eventually move types to a shared location or generated file.
 // Ideally, we would generate these from OpenAPI, but for this task we'll match manually.
 
-const API_Base_URL = 'http://127.0.0.1:8000';
+const API_Base_URL = '';
 
 export const api = {
     // Auth
